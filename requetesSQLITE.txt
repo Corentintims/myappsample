@@ -1,0 +1,81 @@
+
+    FriendList(UserID, FriendID)
+    DateScore{UserID, Date, Score)
+    DateQuizz(UserID, Date, QuizzID)
+    QuestionsQuizz(QuestionID, QuizzID)
+    User(UserID, Password, Age)
+    Quizz(QuizzID, category)
+    Challenge(QuizzID, ReceiverID, SenderID, Status)
+    Question(QuestionID, Category, Title)
+    Choice(ChoiceID, QuestionID, Value, Title)
+    FriendRequest(SenderID, ReceiverID, Status)
+
+Requêtes TP4 :
+Compter le nombre d'utilisateurs :
+
+SELECT
+count(*)
+FROM
+User
+
+Compter le nombre d’amis d’un utilisateur donné :
+
+SELECT
+count(*)
+FROM
+FriendList
+WHERE
+UserID = "Michou"
+
+Compter le nombre de questions dans un test de QI donné :
+
+SELECT
+count(*)
+FROM
+QuestionsQuizz
+WHERE
+QuizzID = 24
+
+Trouver l’ensemble des tests de QI réalisés pour un certain utilisateur :
+
+SELECT
+QuizzID
+FROM
+DateQuizz
+WHERE
+UserID = "Michou"
+
+Trouver pour un certain utilisateur et test de QI, l’ensemble des questions dans ce test auquel
+l’utilisateur n’a pas encore répondu :
+
+Trouver l’ensemble des noms des amis qui n’ont pas encore fini un speed quizz donné auquel un
+utilisateur donné les a défié
+
+SELECT
+ReceiverID
+FROM
+Challenge
+WHERE
+SenderID = "Bob"
+AND
+Status = "En cours"
+
+Calculer le score moyen pour tous les utilisateurs qui ont répondus à un test de QI donné :
+
+SELECT
+avg(DateScore.Score)
+FROM
+DateScore, DateQuizz
+WHERE
+DateScore.Date = DateQuizz.Date
+AND
+DateQuizz.QuizzID = 24
+
+Récupérer pour chaque test de QI, son nom, type et le nombre de questions proposé par ce test :
+
+SELECT
+Quizz.QuizzID, Quizz.Category, count(QuestionsQuizz.QuestionID)
+FROM
+Quizz, QuestionsQuizz
+WHERE
+Quizz.QuizzID = QuestionsQuizz.QuizzID

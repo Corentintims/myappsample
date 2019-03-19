@@ -1,0 +1,231 @@
+CHOIX D'IMPLEMENTATIONS:
+- on a décidé de retirer l'age des questions pour pouvoir challenge n'importe qui (quizz qui prend les meme questions/réponses)
+- on a décidé d'utiliser un id de quizz qui pourra servir de seed dans un prng pour pouvoir générer le meme quizz plusieurs fois (challenge)
+- on a rajouté l'entité challenge (pcq il faut) qui prendre deux utilisateurs, un id de quizz et un statut
+- on a rajouté un attribut date qui fait une reltation ternaire entre quizz score et date, et une autre entre score date et utilisateur.
+- le quizz n'as pas besoin de liste de question vu que son ID et sa catégorie définis les questions tirées dans la pool disponible
+- le Challenge est défini par l'ID du Quizz envoyé, son sender et son receiver. Ca implique qu'un sender peut envoyer le quizz 24 qu'une seule fois eu receiver, mais il peut envoyer le quizz 24 a plein de receiver differents. (tous les quizz envoyés seront identiques)
+- l'attribut score est relié avec date utilisateur et quizz par deux relations ternaires. On peut donc retirer sa valeur à l'aide de la date qui est unique pour un utilisateur et un quizz, et qui est unique pour un score et un utilisateur.
+
+LISTE DES FAITS ELEMENTAIRES (Entités principales) :
+Tous les attributs des entités sont obligatoires exceptés lorsqu'il est mis (facultatif) à côté de l'attribut. 
+
+Un Utilisateur a : 
+- un identifiant (ID) (unique). //Element représentant l'utilisateur.
+- un mot de passe (unique). 
+- un âge (unique). 
+- des amis. 
+- un score pour une date. 
+
+Un Quizz a : 
+- un ID (unique). //Element représentant un quizz
+- une categorie (unique). 
+- une (liste) de question en fonction de sa catégorie et de son ID.
+- une date pour un utilisateur. 
+
+Une Question a : 
+- un identifiant (unique). //Element représentant la question
+- une categorie (unique). 
+- une valeur (+path)(=intitulé) (texte) (unique). 
+
+Un Choix a : 
+
+
+- un ID (1,2,3,4)(numéro)   (unique par question ?)
+
+
+- un numero et une valeur pour une Question (relation ternaire, question-choixID unique). //Un choix se définit par sa question et son intitulé
+- une valeur (unique). 
+- un Titre (+path) (facultatif) (unique). 
+
+Un Challenge a : 
+- un receiver et un ID de quizz pour un sender. //Element représentant le Challenge
+- un sender (Utilisateur) (unique).  
+- un receiver (Utilisateur) (unique). 
+- un statut (En cours, Accepté, Refusé).
+- un ID de Quizz.(represente le quizz)
+
+
+LISTE DES FAITS ELEMENTAIRES (exemples concrets) : 
+
+- L'Utilisateur "Michel" a un identifiant unique "Michou" (ID). //Element représentant l'Utilisateur. 
+- L'Utilisateur "Michel" avec l'identifiant "Michou" a comme mot de passe unique "michel123" (unique). 
+- L'Utilisateur "Michel" avec l'identifiant "Michou" a 24 ans (unique). 
+- L'utilisateur "Michel" avec l'identifiant "Michou" a comme ami l'utilisateur "Bob".
+- L'utilisateur "Michel" avec l'identifiant "Michou" a comme ami l'utilisateur "Alice".
+- L'utilisateur "Michel" avec l'identifiant "Michou" a un score de "130" le "24-02-2019_08:54:32".(relation ternaire)
+
+- Le Quizz de calcul mental a comme catégorie "Calcul mental".
+- Le Quizz de calcul mental a comme ID "4"
+- Le Quizz de calcul mental réalisé avec l'ID "4" a été fait le "24-02-2019_08:54:32" par "Michou" (relation ternaire)
+- Le Quizz de calcul mental a comme questions "prng(seed(4),min(0),max(25)) (tire 10questions)"
+
+- Une Question a un identifiant unique "24" (unique). //Element représentant la question
+- La Question avec l'identifiant "24" a comme catégorie "Mathematiques".
+- La Question avec l'identifiant "24" a comme intitulé "Quelle est la reponse au calcul ?"(=intitulé)+"$path/to/the/file$"(facultatif)(texte)(unique). 
+
+- Le Choix a le numéro 4 pour la question avec l'ID "24".
+- Le Choix avec le numero 4 a une valeur "1 (Vrai)" pour la Question avec l'identifiant "24" .
+- Le Choix avec le numero 4 de la Question "24" a l'intitulé "14"(texte)+"$path/to/the/file$"(facultatif).  
+
+- Le Challenge qui a comme receiver "Michou" et comme ID de Quizz "24" a été envoyé par "Alice".
+- Le Challenge qui a comme receiver "Michou" et comme ID de Quizz "24" qui a été envoyé par "Alice" a comme statut "Accepté".
+
+SCHEMA RELATIONNEL : 
+
+- Amis(UserID, AmiID) //rien à souligner, contrainte classique anti-doublon de multiplet). 
+//fleche de UserID vers UserID de la table User
+//fleche de AmiID vers UserID de la table User
+
+- DateScore(UserID, Date, Score) //souligner user-date 
+//fleche de UserID vers UserID de la table User
+
+- DateQuizz(UserID, Date, QuizzID) //souligner quizz-date
+//fleche de UserID vers UserID de la table User
+//fleche de QuizzID vers QuizzID de la table Quizz
+
+- QuestionsQuizz(QuizzID, QuestionID, Category) //souligner QuizzID-QuestionID ?
+//fleche de QuizzID vers QuizzID de la table Quizz
+//fleche de QuestionID vers QuestionID de la table Question
+
+- User(UserID, Password, Age, Challenge) //Souligner UserID
+
+- Quizz(QuizzID) //Souligner QuizzID
+
+- Challenge(QuizzID, ReceiverID, SenderID, Status) //Souligner SenderID-ReceiverID
+//fleche de QuizzID vers QuizzID de la table Quizz
+//fleche de RceiverID vers UserID de la table User
+//fleche de SenderID vers UserID de la table User
+
+- Question(QuestionID, Category*, Title) //souligner QuestionID
+//fleche de QuestionID vers QuestionID de la table Question
+
+- Choice(ChoiceNum, QuestionID, Value, Title) //Souligner ChoiceNum-QuestionID
+
+* Category dans Question est nécessaire ? elle est déjà dans la relation ternaire quizz-question-categorie non ?
+
+REQUETES SQL :
+
+FriendList(UserID, FriendID)
+DateScore{UserID, Date, Score)
+DateQuizz(UserID, Date, QuizzID)
+QuestionsQuizz(QuestionID, QuizzID)
+User(UserID, Password, Age)
+Quizz(QuizzID, category)
+Challenge(QuizzID, ReceiverID, SenderID, Status)
+Question(QuestionID, Category, Title)
+Choice(ChoiceID, QuestionID, Value, Title)
+FriendRequest(SenderID, ReceiverID, Status)
+
+Creation des tables : 
+CREATE TABLE User (
+    UserID TEXT PRIMARY KEY, 
+    Password TEXT NOT NULL, 
+    Age INTEGER NOT NULL);
+    
+INSERT INTO User (UserID, Password, Age) VALUES ("Michou", "Michel23", 21)
+INSERT INTO User (UserID, Password, Age) VALUES ("Bob", "Michel23", 19)
+INSERT INTO User (UserID, Password, Age) VALUES ("Alice", "Alice48", 21)
+INSERT INTO User (UserID, Password, Age) VALUES ("Luc", "Lulu22", 33)
+
+CREATE TABLE FriendList (
+    UserID TEXT NOT NULL,
+    FriendID TEXT NOT NULL);
+
+INSERT INTO FriendList (UserID, FriendID) VALUES ("Michou", "Alice")
+INSERT INTO FriendList (UserID, FriendID) VALUES ("Michou", "Bob")
+INSERT INTO FriendList (UserID, FriendID) VALUES ("Bob", "Michou")
+INSERT INTO FriendList (UserID, FriendID) VALUES ("Alice", "Michou")
+INSERT INTO FriendList (UserID, FriendID) VALUES ("Bob", "Luc")
+INSERT INTO FriendList (UserID, FriendID) VALUES ("Luc", "Bob")
+
+    
+CREATE TABLE Quizz (
+    QuizzID INTEGER PRIMARY KEY NOT NULL,
+    Category TEXT NOT NULL);
+    
+INSERT ITON Quizz (QuizzID, Category) VALUES (24, "mathematiques")
+INSERT ITON Quizz (QuizzID, Category) VALUES (25, "mathematiques")
+INSERT ITON Quizz (QuizzID, Category) VALUES (26, "logique")
+
+CREATE TABLE QuestionsQuizz (
+    QuizzID INTEGER NOT NULL,
+    QuestionID INTEGER NOT NULL);
+    
+INSERT INTO QuestionsQuizz (QuizzID, QuestionID) VALUES (25, 25)
+INSERT INTO QuestionsQuizz (QuizzID, QuestionID) VALUES (25, 26)
+INSERT INTO QuestionsQuizz (QuizzID, QuestionID) VALUES (24, 25)
+INSERT INTO QuestionsQuizz (QuizzID, QuestionID) VALUES (24, 24)
+INSERT INTO QuestionsQuizz (QuizzID, QuestionID) VALUES (25, 23)
+INSERT INTO QuestionsQuizz (QuizzID, QuestionID) VALUES (24, 22)
+
+    
+CREATE TABLE DateScore (
+    UserID TEXT NOT NULL,
+    Date STRING NOT NULL,
+    Score INTEGER NOT NULL);
+    
+INSERT INTO DateScore (UserID, Date, Score) VALUES ("Michou", "08-03-2019", 105)
+INSERT INTO DateScore (UserID, Date, Score) VALUES ("Michou", "09-03-2019", 107)
+INSERT INTO DateScore (UserID, Date, Score) VALUES ("Michou", "08-03-2019", 106)
+INSERT INTO DateScore (UserID, Date, Score) VALUES ("Bob", "08-03-2019", 110)
+INSERT INTO DateScore (UserID, Date, Score) VALUES ("Alice", "08-03-2019", 105)
+
+    
+CREATE TABLE Questions (
+    QuestionID INTEGER PRIMARY KEY, 
+    Category TEXT NOT NULL,
+    Title TEXT NOT NULL);
+    
+INSERT INTO Questions (QuestionID, Category, Title) VALUES (25, "mathematiques", "2+2 =")
+INSERT INTO Questions (QuestionID, Category, Title) VALUES (26, "mathematiques", "2/2 =")
+INSERT INTO Questions (QuestionID, Category, Title) VALUES (24, "mathematiques", "2*2 =")
+INSERT INTO Questions (QuestionID, Category, Title) VALUES (27, "logique", "Que vaut le ?")
+INSERT INTO Questions (QuestionID, Category, Title) VALUES (28, "logique", "Trouvez l'élément manquant")
+
+    
+CREATE TABLE Choice (
+    ChoiceID INTEGER NOT NULL, 
+    QuestionID TEXT NOT NULL, 
+    Title TEXT DEFAULT '', 
+    Value INTEGER DEFAULT 0);
+    
+INSERT INTO Choice (ChoiceID, QuestionID, Title, Value) VALUES (1, 24, "2", 0)
+INSERT INTO Choice (ChoiceID, QuestionID, Title, Value) VALUES (2, 24, "3", 0)
+INSERT INTO Choice (ChoiceID, QuestionID, Title, Value) VALUES (3, 24, "4", 1)
+INSERT INTO Choice (ChoiceID, QuestionID, Title, Value) VALUES (1, 27, "2", 0)
+INSERT INTO Choice (ChoiceID, QuestionID, Title, Value) VALUES (4, 26, "2", 0)
+INSERT INTO Choice (ChoiceID, QuestionID, Title, Value) VALUES (5, 25, "2", 0)
+INSERT INTO Choice (ChoiceID, QuestionID, Title, Value) VALUES (4, 24, "1", 0)
+
+Challenge(QuizzID, ReceiverID, SenderID, Status)
+CREATE TABLE Challenge (
+    QuizzID INTEGER NOT NULL, 
+    ReceiverID TEXT NOT NULL, 
+    SenderID TEXT NOT NULL,
+    Status INTEGER DEFAULT "En cours");
+    
+INSERT INTO Challenge (QuizzID, ReceiverID, SenderID, Status) VALUES (17, "Michou", "Alice", "Terminé")
+INSERT INTO Challenge (QuizzID, ReceiverID, SenderID, Status) VALUES (18, "Michou", "Alice", "Terminé")
+INSERT INTO Challenge (QuizzID, ReceiverID, SenderID, Status) VALUES (17, "Michou", "Bob", "En cours")
+INSERT INTO Challenge (QuizzID, ReceiverID, SenderID, Status) VALUES (15, "Bob", "Luc", "En cours")
+INSERT INTO Challenge (QuizzID, ReceiverID, SenderID, Status) VALUES (19, "Alice", "Michou", "En cours")
+
+
+CREATE TABLE Choice (
+    ChoiceID INTEGER NOT NULL, 
+    QuestionID TEXT NOT NULL, 
+    Title TEXT DEFAULT '', 
+    Value INTEGER DEFAULT 0);
+
+
+DateQuizz(UserID, Date, QuizzID)
+
+
+RAPPORT DECRIVANT LES CHOIX D'IMPLEMENTATION : 
+
+Pour ce premier rapport, nous deviens concevoir notre base de données qui servira, ensuite, à stockerles données de notre application IQwhizz. 
+Pour ce faire, nous avons commencé par analyser les éléments principaux nécessaires (User, Question, Choix, Challenge et Quizz) qui sont donc devenues nos entités principales. 
+Sur base de ces entités, dont chacune explique bien ce qu'elle représente par son nom, nous avons attribués les éléments de base tels que l'identifiant et mot de passe pour l'utilisateur, son âge (permettant de calculer le QI) ; le titre d'une question, sa catégorie et de quel quizz particulier elle fait partie ; un choix et son intitulé et sa valeur (statut de vérité), ...
+Ensuite, une fois ces éléments primordiaux placés dans notre schéma, nous avons pu rajouter différents éléments supplémentaires tels qu'une date permettant de rajouter une dimension temporelle permettant de voir l'évolution de ses scores au fil du temps. Nous avons également mis l'option de Challenge, de défier un autre utilisateur. Pour ces défis entre amis, nous faisons la supposition que, comme l'application ne sera utilisée qu'en local, nous supposons que toutes les personnes l'utilisant sont amies, ce qui explique que nous n'ayons pas rajouté de table ou de valeur particulière. 
+Ces différents éléments supplémentaires peuvent être intéressants pour les utilisateurs car cela leur permet d'avoir une expérience supplémentaire que juste un test de QI classique comme il en existe déjà des dizaines. 
